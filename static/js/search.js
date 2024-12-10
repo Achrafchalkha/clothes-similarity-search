@@ -40,18 +40,12 @@ document.getElementById('imageInput').addEventListener('change', function() {
     label.textContent = fileName || 'Choose an image...';
 });
 
-document.getElementById('imageInput').addEventListener('change', function() {
-    var fileName = this.files[0] ? this.files[0].name : '';
-    var label = document.querySelector('.custom-file-label');
-    label.textContent = fileName || 'Choose an image...';
-});
-
 function displayResults(results) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
 
     if (results.length === 0) {
-        resultsContainer.innerHTML = '<p>No results found.</p>';
+        resultsContainer.innerHTML = '<p>No results found</p>';
         return;
     }
 
@@ -82,3 +76,41 @@ function displayResults(results) {
         resultsContainer.appendChild(item);
     });
 }
+
+function searchProducts(clothingName) {
+    fetch(`/search/name?query=${encodeURIComponent(clothingName)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayResults(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while searching. Please try again.');
+        });
+}
+
+function voiceSearch() {
+    const voiceSearchButton = document.getElementById('voice-search-button');
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+
+    voiceSearchButton.addEventListener('click', () => {
+        recognition.start();
+    });
+
+    recognition.onresult = (event) => {
+        const clothingName = event.results[0][0].transcript;
+        console.log('Recognized text:', clothingName);
+        searchProducts(clothingName);
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+    };
+}
+
+voiceSearch();

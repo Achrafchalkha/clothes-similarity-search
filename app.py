@@ -418,6 +418,29 @@ def get_categories():
         logger.error(f"Error getting categories: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/search/name', methods=['GET'])
+def search_by_name():
+    try:
+         # Capture the query and log it for debugging
+        query = request.args.get('query', '').strip()
+        logger.info(f"Captured query: '{query}'")  
+
+        clothing_name = query.upper().rstrip('.')  # Convert to uppercase and remove trailing period
+        if not clothing_name:
+            return jsonify({'error': 'No clothing name provided'}), 400
+
+        results = []
+        for product in metadata_dict.values():
+            if clothing_name in product['name'].upper():
+                results.append(product)
+            if len(results) >= 12:  # Limit results to 12
+                break
+
+        return jsonify(results)
+    except Exception as e:
+        logger.error(f"Error in name search: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 def initialize_app():
     print("\n=== Starting Application Initialization ===")
     
